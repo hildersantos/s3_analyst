@@ -3,13 +3,19 @@ defmodule S3Analyst.Api.BucketTest do
 	alias S3Analyst.Api.Bucket
 
 	describe "Bucket tasks:" do
+		setup :get_buckets
 
-		test "get bucket list" do
-			buckets = Bucket.get_buckets
+		# For this test to pass, you should have at least one bucket on your account, and valid credentials setted up on your test environment.
+		test "get bucket list", %{buckets: buckets} do
 			assert is_list(buckets)
-			assert Enum.count(buckets) >= 0
+			assert Enum.count(buckets) > 0
 		end
+	end
 
+	defp get_buckets(_context) do
+		response = Bucket.get_buckets
+
+		[buckets: response.body.buckets]
 	end
 
 end
