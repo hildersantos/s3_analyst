@@ -17,18 +17,37 @@ defmodule S3Analyst.Api.Bucket do
 	"""
 	@spec get_buckets :: term
 	def get_buckets do
-		response = ExAws.S3.list_buckets
+		ExAws.S3.list_buckets
 		|> ExAws.request!
+	end
+
+	@doc """
+	Fills bucket with info. Should have a valid ExAws.Request parameter.
+	"""
+	@spec fill_buckets(term) :: [Bucket.t]
+	def fill_buckets(%{body: %{buckets: buckets}} = _request) do
+		# Anonymous function to async stream
+		build_buckets = fn bucket ->
+			bucket
+			|> generate_struct
+			|> add_region_to_bucket
+			|> attach_objects_to_bucket
+		end
+
+		# Making async requests between buckets, improving concurrency
+		buckets
+		|> Task.async_stream(build_buckets)
+		|> Enum.reduce([], fn ({:ok, item}, rest) ->
+			[item | rest]
+		end)
 	end
 
 	@doc """
 	Generates the struct from an `ExAws` valid request.
 	"""
-	@spec generate_structs(term) :: Bucket.t
-	def generate_structs(bucket_list) do
-		Enum.map(bucket_list, fn bucket ->
-			struct(Bucket, bucket)
-		end)
+	@spec generate_struct(term) :: Bucket.t
+	def generate_struct(bucket) do
+		struct(Bucket, bucket)
 	end
 
 	@doc """
@@ -37,7 +56,7 @@ defmodule S3Analyst.Api.Bucket do
 	@spec add_region_to_bucket(Bucket.t) :: Bucket.t
 	def add_region_to_bucket(%Bucket{name: name} = bucket) do
 		region = ExAws.S3.get_bucket_location(name)
-		|> ExAws.stream!
+		|> ExAws.request!
 
 		# This is necessary because us-east-1 returns an empty string
 		region = case region.body |> xpath(~x"/LocationConstraint/text()") |> to_string do
@@ -51,7 +70,7 @@ defmodule S3Analyst.Api.Bucket do
 	@doc """
 	This function does some interesting things:
 
-	1. Fetches the objects from one given `%Bucket{}` *(please note this `%Bucket{}` should have valid `:name` and `:region` keys)`
+	1. Fetches the objects from one given `%Bucket{}` *(please note this `%Bucket{}` should have valid `:name` and `:region` keys)`*
 	2. Sorts the objects by creation date (newest to oldest)
 	3. Fills the remaining keys from `%Bucket{}`, based on objects info
 	"""
