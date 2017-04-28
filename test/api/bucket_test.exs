@@ -2,6 +2,8 @@ defmodule S3Analyst.Api.BucketTest do
 	use ExUnit.Case, async: true
 	alias S3Analyst.Api.Bucket
 
+	@moduletag :external
+	
 	describe "Bucket tasks:" do
 		setup :get_buckets
 

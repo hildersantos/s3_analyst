@@ -26,6 +26,7 @@ defmodule S3Analyst.Api.Bucket do
 	"""
 	@spec fill_buckets(term) :: [Bucket.t]
 	def fill_buckets(%{body: %{buckets: buckets}} = _request) do
+
 		# Anonymous function to async stream
 		build_buckets = fn bucket ->
 			bucket
@@ -34,7 +35,6 @@ defmodule S3Analyst.Api.Bucket do
 			|> attach_objects_to_bucket
 		end
 
-		# Making async requests between buckets, improving concurrency
 		buckets
 		|> Task.async_stream(build_buckets)
 		|> Enum.reduce([], fn ({:ok, item}, rest) ->
