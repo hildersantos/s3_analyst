@@ -17,6 +17,12 @@ defmodule S3Analyst.Api.Bucket do
 	"""
 	@spec get_buckets :: term
 	def get_buckets do
+		# Before get the buckets from Amazon S3, we should check for env variables
+		unless System.get_env("AWS_ACCESS_KEY_ID") && System.get_env("AWS_SECRET_ACCESS_KEY") do
+			IO.puts "Environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY was not set correctly. Please, set this variables on your system and try again."
+			System.halt(0)
+		end
+
 		ExAws.S3.list_buckets
 		|> ExAws.request!
 	end
