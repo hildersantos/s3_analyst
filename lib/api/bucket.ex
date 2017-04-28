@@ -97,7 +97,16 @@ defmodule S3Analyst.Api.Bucket do
 			objects: objects,
 			total_files: Enum.count(objects),
 			total_size: total_size,
-			last_modified_date: List.first(objects) |> Map.get(:last_modified)
+			last_modified_date: get_last_modified_date(objects)
 		}
 	end
+
+	defp get_last_modified_date(objects) do
+		first_object = List.first(objects)
+		case is_map(first_object) do
+			false -> "no-files"
+			_ -> Map.get(first_object, :last_modified)
+		end
+	end
+
 end
