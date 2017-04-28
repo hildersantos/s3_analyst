@@ -37,14 +37,19 @@ defmodule S3Analyst.Utils do
 	Ex.
 		iex> S3Analyst.Utils.friendly_date("2017-04-21T04:57:13.000Z")
 		"2017-04-21 04:57:13"
+
+		 iex> S3Analyst.Utils.friendly_date("invalid date") 
+		 ""
 	"""
 	@spec friendly_date(String.t) :: String.t
 	def friendly_date(date) do
-		with {:ok, datetime, _} <- DateTime.from_iso8601(date) do
-			new_datetime = Map.update!(datetime, :microsecond, fn (_key) ->
+		case DateTime.from_iso8601(date) do
+			{:ok, datetime, _} -> 
+				new_datetime = Map.update!(datetime, :microsecond, fn (_key) ->
 				{0,0}
-			end)
-			NaiveDateTime.to_string(new_datetime)
+				end)
+				NaiveDateTime.to_string(new_datetime)
+			{:error, _reason} -> ""
 		end
 	end
 	
