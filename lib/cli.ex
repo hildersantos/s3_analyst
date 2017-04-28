@@ -41,14 +41,18 @@ defmodule S3Analyst.CLI do
 	]
 
 	# Text used by help
-	@help_txt """
-	Usage: s3analyst [--limit | -l <number>] [--output | -o <table | json>] [--order_by <name | size | creation_date | last_updated>] [--order <asc | desc>] [--percentage | -p] [--no-cache] [--help | -h]
+	@help_header """
+	Usage: s3analyst [--limit | -l <number>] [--output | -o <table | json>] [--order_by <name | size | creation_date | last_updated>] [--order <asc | desc>] [--humanize | -H] [--filter | -f <regex>] [--no-cache] [--timeout | -t <number>] [--help | -h]
 
-	--limit, -l 				Limit the total results (-1 to show all results). Default: #{@defaults[:limit]}
+
+	"""
+
+	@help_txt """
+	--limit, -l 			    Limit the total results (-1 to show all results). Default: #{@defaults[:limit]}
 	--output, -o 				Output format (table, json). Default: #{@defaults[:output]} 
 	--order-by				Orders by name, total_size, total_files, region, creation_date or last_modified_date. Default: #{@defaults[:order_by]}
 	--order 				Outputs results in ascendent (asc) or descendent (desc) order. Default: #{@defaults[:order]}
-	--percentage, -p 			Shows percentage of size used by bucket (relative to total buckets size)
+	--humanize, -H 				Converts the "Total Size" data into a most human readable format.
 	--filter, -f 				Filters the results by bucket name. You can pass regular expressions to this option. Ex: -f ^prefix
 	--no-cache 				Invalidates the cache and fetches fresh results from Amazon S3
 	--timeout, -t				Forces a request timeout value (in ms). Default: #{@defaults[:timeout]}
@@ -90,7 +94,9 @@ defmodule S3Analyst.CLI do
 	"""
 	@spec process(atom | tuple) :: any
 	def process(:help) do
-		IO.puts @help_txt
+		[:green, :bright, @help_header, :normal, :default_color, @help_txt]
+		|> IO.ANSI.format
+		|> IO.puts
 		System.halt(0)
 	end
 
@@ -170,6 +176,7 @@ defmodule S3Analyst.CLI do
 			end
 		end)
 
+		# Exists the script if there's no buckets to show
 		if length(filtered_buckets) === 0 do
 			IO.puts "No buckets matched your criteria"
 		 	System.halt(0)

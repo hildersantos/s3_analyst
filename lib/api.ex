@@ -1,6 +1,14 @@
 defmodule S3Analyst.Api do
 	alias S3Analyst.Api.Bucket
 
+	@moduledoc """
+	This module is responsible for fetching the results from cache or Amazon AWS.
+	"""
+
+	@doc """
+	Fetches the results from cache or Amazon AWS, based on `options` passed.
+	"""
+	@spec fetch(Keyword.t) :: any
 	def fetch(options) do
 		unless !!options[:no_cache] do
 			Stash.load(:s3, "/tmp/s3_analyst")
