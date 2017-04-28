@@ -41,7 +41,7 @@ defmodule S3Analyst.Utils do
 	@spec friendly_date(String.t) :: String.t
 	def friendly_date(date) do
 		with {:ok, datetime, _} <- DateTime.from_iso8601(date) do
-			new_datetime = Map.update!(datetime, :microsecond, fn (key) ->
+			new_datetime = Map.update!(datetime, :microsecond, fn (_key) ->
 				{0,0}
 			end)
 			NaiveDateTime.to_string(new_datetime)
