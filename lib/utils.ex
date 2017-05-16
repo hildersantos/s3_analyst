@@ -39,7 +39,7 @@ defmodule S3Analyst.Utils do
 		"2017-04-21 04:57:13"
 
 		 iex> S3Analyst.Utils.friendly_date("invalid date") 
-		 ""
+		 nil
 	"""
 	@spec friendly_date(String.t) :: String.t
 	def friendly_date(date) do
@@ -49,7 +49,7 @@ defmodule S3Analyst.Utils do
 				{0,0}
 				end)
 				NaiveDateTime.to_string(new_datetime)
-			{:error, _reason} -> ""
+			{:error, _reason} -> nil
 		end
 	end
 	
